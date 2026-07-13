@@ -1,47 +1,68 @@
-import math
-from vectors import vec
-from bodies import earth
-from bodies import moon
-#-------------------------#
+from objects import Vec
+from objects import Body
+from itertools import combinations
+import matplotlib.pyplot as plt
 
-G = 6.67430e-11
+G = 6.6743e-11
+dt = 10
+time = 0
+steps = 0
 
-def gravitational_force(G, mass1, mass2, distance):
-    force = (G*mass1*mass2)/distance**2
-    return force
+Earth = Body(
+    Vec(2.5, 0),
+    Vec(0, -0.001825),
+    1e6,
+)
 
-def f_vector(force, unit_direction):
-    force_vector = unit_direction * force 
-    return force_vector
+Moon = Body(
+    Vec(-2.5, 0),
+    Vec(0, 0.001825),
+    1e6,
+)
 
-def acceleration(mass, f_vector ):
-    return f_vector/mass
+bodies = [Earth, Moon]
 
-def distance(direction):
-    distance = direction.magnitude()
-    return distance
+#===============calculatons==================
 
-mass1 = earth.mass
-mass2 = moon.mass
+while time<30000:
 
-direction = moon.position - earth.position
+    for body in bodies:
+        body.force = Vec(0, 0)
 
-force = gravitational_force(G, mass1, mass2, distance(direction))
+    def gravitational_force(body1, body2):
+        r_vec = body2.position - body1.position
+        distance = r_vec.magnitude()
+        direction = r_vec.normalize()
+        force_vec = G*body1.mass*body2.mass/distance**2
+        force_vector = direction.multk(force_vec)
+        return force_vector
 
-unit_direction = direction/direction.magnitude()
+    def acceleration(body):
+        force = body.force
+        mass = body.mass
+        accel = force.divide(mass)
+        return accel
 
-force_on_earth = f_vector(force, unit_direction)
-force_on_moon = f_vector(force, unit_direction)*-1
+    def velocity(body, dt):
+        a = acceleration(body)
+        instantaneous_velocity = body.velocity + a.multk(dt)
+        return instantaneous_velocity
 
-earth_acceleration = acceleration(earth.mass, force_on_earth) 
-moon_acceleration = acceleration(moon.mass, force_on_moon)*-1
 
-result = f_vector(gravitational_force(G, mass1, mass2, distance(direction)), unit_direction)
+    for body1, body2 in combinations(bodies, 2):
+        force_vec = gravitational_force(body1, body2)
+        body1.force = body1.force + force_vec
+        body2.force = body2.force - force_vec
+        
 
-# print(gravitational_force(G, mass1, mass2, distance(vec1, vec2)))
-# print(acceleration(mass1, mass2, gravitational_force(G, mass1, mass2, distance(vec1, vec2))))
-#print(distance(vec1, vec2))
-# print(f_vector(gravitational_force(G, mass1, mass2, distance(direction)), unit_direction))
-# print((result.x, result.y))
-# print((moon_acceleration.x, moon_acceleration.y))
-# print((earth_acceleration.x, earth_acceleration.y))
+    for body in bodies:
+        body.velocity = velocity(body, dt)
+        body.position = body.position + velocity(body, dt).multk(dt)
+        print(body.position)
+
+    time += dt
+    steps += 1
+
+
+print(f"Tempo simulado: {time}")
+print(f"Passos decorridos: {steps}")
