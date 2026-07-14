@@ -4,34 +4,78 @@ from itertools import combinations
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots()
-ax.set_xlim(-10, 10)
-ax.set_ylim(-10, 10)
+plt.tight_layout
+fig.patch.set_facecolor('#10324a')
+ax.set_facecolor('black')
+
+ax.grid(True, color = 'navy')
+
+ax.set_xlim(-2, 2)
+ax.set_ylim(-2, 2)
+ax.set_aspect('equal')
+ax.set_title('n-body simulation', color = 'white')
 
 earth_point, = ax.plot([], [], "bo")
-moon_point, = ax.plot([], [], "go")
+moon_point, = ax.plot([], [], color = "gray", marker = "o")
+sun_point, = ax.plot([], [], color = "yellow", marker = "o")
+mercury_point, = ax.plot([], [], color = "darkgray", marker = "o")
+venus_point, = ax.plot([], [], color = "khaki", marker = "o")
+mars_point, = ax.plot([], [], color = "red", marker = "o")
+asteroid_point, = ax.plot([], [], color = "white", marker = "o")
 
 plt.ion()
 plt.show()
 
+AU = 149597870700
 G = 6.6743e-11
-dt = 0.1
+dt = 600
 time = 0
 steps = 0
-timewarp = 200
+timewarp = 100
+
+Sun = Body(
+    Vec(0, 0),
+    Vec(0, 0),
+    1.9885e30,
+)
+
+Mercury = Body(
+    Vec(69816900000, 0),
+    Vec(0, 38860),
+    3.3011e23,
+)
+
+Venus = Body(
+    Vec(-108939000000, 0),
+    Vec(0, -35260),
+    4.8675e24,
+)
 
 Earth = Body(
-    Vec(2.5, 0),
-    Vec(0, -0.001825),
-    1e6,
+    Vec(152100000000, 0),
+    Vec(0, 29290),
+    5.9722e24,
 )
 
 Moon = Body(
-    Vec(-2.5, 0),
-    Vec(0, 0.001825),
-    1e6,
+    Vec(-69816900000, 0),
+    Vec(0, -55300),
+    1e10,
+) #Moon used for test instead of the asteroid
+
+Asteroid = Body(
+    Vec(500000, 0),
+    Vec(0, 61000),
+    1e10,
 )
 
-bodies = [Earth, Moon]
+Mars = Body(
+    Vec(-249261000000, 0),
+    Vec(0, -21970),
+    6.4171e23,
+)
+
+bodies = [Sun, Mercury, Venus, Earth, Moon, Mars, Asteroid]
 
 #===============calculations==================
 
@@ -49,12 +93,12 @@ def acceleration(body):
     accel = force.divide(mass)
     return accel
 
-def velocity(body, dt):
+def half_kick(body, dt):
     a = acceleration(body)
-    instantaneous_velocity = body.velocity + a.multk(dt)
+    instantaneous_velocity = body.velocity + a.multk(dt/2)
     return instantaneous_velocity
 
-def physics_step():
+def calculate_forces():
     for body in bodies:
         body.force = Vec(0, 0)
 
@@ -62,23 +106,39 @@ def physics_step():
         force_vec = gravitational_force(body1, body2)
         body1.force = body1.force + force_vec
         body2.force = body2.force - force_vec
-            
+
+def physics_step():
+
+    calculate_forces()
+    
+    for body in bodies:
+        body.velocity = half_kick(body, dt)
+        
+    for body in bodies:
+        body.position = body.position + body.velocity.multk(dt)
+
+    calculate_forces()
 
     for body in bodies:
-        body.velocity = velocity(body, dt)
-        body.position = body.position + velocity(body, dt).multk(dt)
-        print(body.position)
+        body.velocity = half_kick(body, dt)
 
-while time<30000:
+
+while time<315360000:
     for _ in range(timewarp):
         physics_step()   
         time += dt
-
-    earth_point.set_data([Earth.position.x], [Earth.position.y])
-    moon_point.set_data([Moon.position.x], [Moon.position.y])
+    
+    sun_point.set_data([Sun.position.x/AU], [Sun.position.y/AU])
+    mercury_point.set_data([Mercury.position.x/AU], [Mercury.position.y/AU])
+    venus_point.set_data([Venus.position.x/AU], [Venus.position.y/AU])
+    earth_point.set_data([Earth.position.x/AU], [Earth.position.y/AU])
+    moon_point.set_data([Moon.position.x/AU], [Moon.position.y/AU])
+    mars_point.set_data([Mars.position.x/AU], [Mars.position.y/AU])
     plt.pause(0.001)
     steps += 1
 
 
 print(f"Tempo simulado: {time}")
 print(f"Passos decorridos: {steps}")
+
+#v1 almost finished
