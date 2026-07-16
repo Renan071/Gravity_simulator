@@ -6,16 +6,23 @@ The goal of this project is to build a gravitational simulator from scratch, imp
 
 ## Current Features
 
-✅ Vector class implementation  
-✅ Vector addition, subtraction and scalar multiplication  
-✅ Vector magnitude calculation  
-✅ Distance calculation between bodies  
-✅ Newtonian gravitational force calculation  
-✅ Force represented as a vector  
-✅ Acceleration calculation from force and mass  
+- Vector class implementation  
+- Vector addition, subtraction and scalar multiplication  
+- Vector magnitude calculation  
+- Distance calculation between bodies  
+- Newtonian gravitational force calculation  
+- Force represented as a vector  
+- Acceleration calculation from force and mass  
+- Velocity updates using half-kick integration method  
+- Position updates with numerical integration  
+- Complete simulation loop with time warping  
+- Graphical interface with matplotlib visualization  
+- Multi-body orbital simulation (Sun, Mercury, Venus, Earth, Moon, Mars, Asteroid)  
 
 ## Project Structure
 
+- `gravity_sim.py` - Main simulation script with visualization
+- `objects.py` - Vector and Body class implementations
 
 ## Physics Implemented
 
@@ -38,15 +45,25 @@ $$
 a = \frac{F}{m}
 $$
 
+### Numerical Integration
+
+The simulation uses a **half-kick integration method** to update velocities and positions:
+
+1. Calculate forces on all bodies
+2. Update velocities with half timestep acceleration
+3. Update positions using full timestep with updated velocities
+4. Recalculate forces at new positions
+5. Update velocities with another half timestep acceleration
+
 ## Future Goals
 
-- [ ] Implement velocity updates
-- [ ] Implement position updates
-- [ ] Create the simulation loop
-- [ ] Add numerical integration methods
-- [ ] Simulate complete orbital systems
-- [ ] Add graphical interface
-- [ ] Improve performance and code structure
+- Improve accuracy with higher-order integration methods
+- Add collision detection and merging
+- Optimize performance for larger n-body systems
+- Add user controls for real-time parameter adjustment
+- Export trajectories for analysis
+- Add trails to visualize orbital paths
+- Enhance graphical interface with zoom and pan controls
 
 ## Purpose
 
@@ -61,4 +78,4 @@ This project is mainly focused on learning and experimenting with:
 
 ## Status
 
-🚧 In development
+Active development (v1 nearly finished)
